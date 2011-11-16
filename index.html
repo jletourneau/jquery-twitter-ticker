@@ -1,0 +1,26 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+  <head>
+    <title>Twitter ticker</title>
+    <link href="css/twitter-ticker.css" rel="stylesheet" type="text/css">
+    <style type="text/css">
+body {
+  font: normal 12px Verdana, sans-serif;
+}
+.twitter {
+  line-height: 1.2;
+  width: 25em;
+  height: 3.6em;
+}
+    </style>
+  </head>
+  <body>
+    <div class="twitter" data-username="jlet"></div>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.0/jquery.min.js"></script>
+    <script type="text/javascript" src="javascript/user_timeline.js"></script>
+    <script type="text/javascript" src="javascript/jquery.twitter-ticker.js"></script>
+    <script type="text/javascript">
+      $(function () { $('.twitter').twitterTicker(); });
+    </script>
+  </body>
+</html>
