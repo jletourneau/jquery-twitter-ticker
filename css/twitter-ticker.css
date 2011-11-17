@@ -1,9 +1,7 @@
-/* line 1, ../sass/twitter-ticker.sass */
 .twitter-ticker {
   position: relative;
   overflow: hidden;
 }
-/* line 4, ../sass/twitter-ticker.sass */
 .twitter-ticker ul {
   list-style-type: none;
   margin: 0;
@@ -12,7 +10,6 @@
   top: 0;
   left: 0;
 }
-/* line 11, ../sass/twitter-ticker.sass */
 .twitter-ticker ul li {
   overflow: hidden;
   min-height: 100%;
