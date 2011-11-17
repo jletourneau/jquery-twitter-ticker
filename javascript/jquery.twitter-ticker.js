@@ -58,24 +58,29 @@
                 .css({ height: element.height() })
                 .appendTo(element);
             var holdList = $('<ul/>');
-            var selectedTweet = function () {
-                var selected = $('.selected-tweet', twList);
-                return selected.length ? $(selected.first()) : null;
+            var tweetsEmpty = function () {
+                return !$('li', twList).length;
             };
             var selectTweet = function (tweet) {
+                tweet = tweet || $('li:first', twList);
                 $('.selected-tweet', twList).removeClass('selected-tweet');
                 tweet.addClass('selected-tweet');
                 return tweet;
             };
+            var selectedTweet = function () {
+                var selected = $('.selected-tweet', twList);
+                return selected.length ? selected : null;
+            };
             var holdTweets = function (data) {
-                for (var i = data.length - 1; i >= 0; i--) {
-                    holdList.prepend(utils.createTweet(data[i]));
+                var len = data.length;
+                for (var i = len; i > 0; i--) {
+                    holdList.prepend(utils.createTweet(data[i - 1]));
                 }
+                // Can move straight to the real list if it's currently empty
+                len && tweetsEmpty() && addTweets();
             };
             var addTweets = function () {
                 var newTweets = $('li', holdList);
-                newTweets.length &&
-                    utils.log('Adding ' + newTweets.length + ' new tweets');
                 $('li', holdList).prependTo(twList);
                 snapToSelected();
             };
@@ -96,12 +101,7 @@
                     success: function (data) {
                         var newTweets = data.length;
                         utils.log(newTweets + ' new tweets received');
-                        if (!newTweets) { return; }
                         holdTweets(data);
-                        if (!selectedTweet()) {
-                            addTweets();
-                            selectTweet($('li:first', twList));
-                        }
                     },
                     complete: function () {
                         startUpdateTimer();
@@ -115,8 +115,7 @@
                 }
             };
             var snapToSelected = function () {
-                var selected = selectedTweet();
-                if (!selected) { return; }
+                var selected = selectedTweet() || selectTweet();
                 twList.css({ top: -1 * selected.position().top });
             };
             var scrollToTweet = function (tweet, callback) {
@@ -140,28 +139,22 @@
                     selectTweet(firstTweet);
                     snapToSelected();
                     clone.remove();
-                    // We trim extra tweets now rather than immediately after
-                    // fetching them so that we don't have to deal with the
-                    // possibility of the tweet in view being pushed out of
-                    // range by newly-prepended tweets just retrieved.
-                    //
-                    // TODO: perhaps when new tweets come in, do a similar
-                    // switcheroo to reposition, putting a clone of the newest
-                    // tweet in right after the one that's currently showing,
-                    // and then resetting to the top.
                     trimTweetList();
                 });
             };
             var scrolling = {
                 id: null,
                 go: function () {
+                    // If we have new tweets waiting for us, add them now and
+                    // scroll up to them right away; otherwise, scroll to the
+                    // next tweet, or back to the top if we're at the end.
                     if ($('li', holdList).length) {
                         addTweets();
                         resetToTop();
                         return;
                     }
-                    if (!$('li', twList).length) { return; }
-                    var selected = selectedTweet();
+                    if (tweetsEmpty()) { return; }
+                    var selected = selectedTweet() || selectTweet();
                     var next = selected.next('li');
                     next.length ? scrollToTweet(next) : resetToTop();
                 },
