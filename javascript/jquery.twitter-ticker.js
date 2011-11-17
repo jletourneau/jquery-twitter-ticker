@@ -93,7 +93,7 @@
                             var newHeight = twList.prop('scrollHeight');
                             var topShift = newHeight - originalHeight;
                             twList.css({
-                                top: parseInt(list.css('top')) - topShift
+                                top: parseInt(twList.css('top')) - topShift
                             });
                         }
                     },
