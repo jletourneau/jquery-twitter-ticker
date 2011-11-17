@@ -57,6 +57,7 @@
             var twList = $('<ul/>')
                 .css({ height: element.height() })
                 .appendTo(element);
+            var holdList = $('<ul/>');
             var selectedTweet = function () {
                 var selected = $('.selected-tweet', twList);
                 return selected.length ? $(selected.first()) : null;
@@ -66,10 +67,17 @@
                 tweet.addClass('selected-tweet');
                 return tweet;
             };
-            var prependTweets = function (data) {
+            var holdTweets = function (data) {
                 for (var i = data.length - 1; i >= 0; i--) {
-                    twList.prepend(utils.createTweet(data[i]));
+                    holdList.prepend(utils.createTweet(data[i]));
                 }
+            };
+            var addTweets = function () {
+                var newTweets = $('li', holdList);
+                newTweets.length &&
+                    utils.log('Adding ' + newTweets.length + ' new tweets');
+                $('li', holdList).prependTo(twList);
+                snapToSelected();
             };
             var startUpdateTimer = function () {
                 if (options.update) {
@@ -77,7 +85,6 @@
                 }
             };
             var getNewTweets = function () {
-                utils.log('Checking for new tweets...');
                 $.ajax({
                     url: 'http://api.twitter.com/1/statuses/user_timeline.json',
                     dataType: 'json',
@@ -87,19 +94,24 @@
                         since_id: $('li:first', twList).data('id')
                     },
                     success: function (data) {
-                        utils.log(data.length + ' new tweets received');
-                        prependTweets(data);
-                        selectedTweet() ?
-                            snapToSelected() :
+                        var newTweets = data.length;
+                        utils.log(newTweets + ' new tweets received');
+                        if (!newTweets) { return; }
+                        holdTweets(data);
+                        if (!selectedTweet()) {
+                            addTweets();
                             selectTweet($('li:first', twList));
+                        }
                     },
-                    complete: startUpdateTimer
+                    complete: function () {
+                        startUpdateTimer();
+                    }
                 });
             };
             var trimTweetList = function () {
                 var tweets = $('li', twList);
                 for (var i = tweets.length - 1; i >= options.items; i--) {
-                    tweets.get(i).remove();
+                    $(tweets.get(i)).remove();
                 }
             };
             var snapToSelected = function () {
@@ -125,8 +137,8 @@
                 var firstTweet = $('li:first', twList);
                 var clone = firstTweet.clone().insertAfter(selectedTweet());
                 scrollToTweet(clone, function () {
-                    twList.css({ top: 0 });
                     selectTweet(firstTweet);
+                    snapToSelected();
                     clone.remove();
                     // We trim extra tweets now rather than immediately after
                     // fetching them so that we don't have to deal with the
@@ -140,16 +152,29 @@
                     trimTweetList();
                 });
             };
-            var startScrolling = function () {
-                window.setInterval(function () {
+            var scrolling = {
+                id: null,
+                go: function () {
+                    if ($('li', holdList).length) {
+                        addTweets();
+                        resetToTop();
+                        return;
+                    }
                     if (!$('li', twList).length) { return; }
                     var selected = selectedTweet();
                     var next = selected.next('li');
                     next.length ? scrollToTweet(next) : resetToTop();
-                }, 1000 * options.rotate);
+                },
+                start: function () {
+                    scrolling.id = window.setInterval(
+                        scrolling.go, 1000 * options.rotate);
+                },
+                stop: function () {
+                    window.clearInterval(scrolling.id);
+                }
             };
             getNewTweets();
-            startScrolling();
+            scrolling.start();
         };
 
         return this.each(function () {
