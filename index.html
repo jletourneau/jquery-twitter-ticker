@@ -7,7 +7,7 @@
 body {
   font: normal 12px Verdana, sans-serif;
 }
-.twitter {
+#twitter {
   line-height: 1.2;
   width: 25em;
   height: 3.6em;
@@ -15,12 +15,18 @@ body {
     </style>
   </head>
   <body>
-    <div class="twitter" data-username="jlet"></div>
+    <div id="twitter"></div>
     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.0/jquery.min.js"></script>
     <script type="text/javascript" src="javascript/user_timeline.js"></script>
     <script type="text/javascript" src="javascript/jquery.twitter-ticker.js"></script>
     <script type="text/javascript">
-      $(function () { $('.twitter').twitterTicker(); });
+      $(function () {
+          $('#twitter').twitterTicker({
+              screen_name: 'jlet',
+              items: 10,
+              rotate: 3
+          });
+      });
     </script>
   </body>
 </html>
