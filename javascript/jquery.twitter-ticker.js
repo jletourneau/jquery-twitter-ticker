@@ -119,10 +119,11 @@
             var resetToTop = function () {
                 // To go back to the top of the list while looking like we're
                 // always scrolling downwards, we stick a clone of the first
-                // tweet at the end of the list, scroll down to it, reset our
-                // top offset back to 0 instantaneously, and remove the clone.
+                // tweet underneath the currently selected one, scroll down to
+                // it, reset our top offset back to 0 instantaneously, and
+                // remove the clone.
                 var firstTweet = $('li:first', twList);
-                var clone = firstTweet.clone().appendTo(twList);
+                var clone = firstTweet.clone().insertAfter(selectedTweet());
                 scrollToTweet(clone, function () {
                     twList.css({ top: 0 });
                     selectTweet(firstTweet);
