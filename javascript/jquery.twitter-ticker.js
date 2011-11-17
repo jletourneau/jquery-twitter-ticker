@@ -56,8 +56,16 @@
             element = $(element).addClass('twitter-ticker');
             var twList = $('<ul/>')
                 .css({ height: element.height() })
-                .data('selected', 0) // Indicates which tweet is in view
                 .appendTo(element);
+            var selectedTweet = function () {
+                var selected = $('.selected-tweet', twList);
+                return selected.length ? $(selected.first()) : null;
+            };
+            var selectTweet = function (tweet) {
+                $('.selected-tweet', twList).removeClass('selected-tweet');
+                tweet.addClass('selected-tweet');
+                return tweet;
+            };
             var prependTweets = function (data) {
                 for (var i = data.length - 1; i >= 0; i--) {
                     twList.prepend(utils.createTweet(data[i]));
@@ -76,52 +84,48 @@
                     data: {
                         screen_name: options.screen_name,
                         count: options.items,
-                        since_id: twList.find('li:first').data('id')
+                        since_id: $('li:first', twList).data('id')
                     },
                     success: function (data) {
                         utils.log(data.length + ' new tweets received');
-                        var emptyList = !twList.find('li').length;
-                        var originalHeight = twList.prop('scrollHeight');
                         prependTweets(data);
-                        // If we had some tweets up already, we need to bump up
-                        // our selected index and shift the list up to maintain
-                        // consistent state with the newly prepended tweet(s).
-                        if (!emptyList) {
-                            twList.data(
-                                'selected',
-                                twList.data('selected') + data.length);
-                            var newHeight = twList.prop('scrollHeight');
-                            var topShift = newHeight - originalHeight;
-                            twList.css({
-                                top: parseInt(twList.css('top')) - topShift
-                            });
-                        }
+                        selectedTweet() ?
+                            snapToSelected() :
+                            selectTweet($('li:first', twList));
                     },
                     complete: startUpdateTimer
                 });
             };
             var trimTweetList = function () {
-                var tweets = twList.find('li');
+                var tweets = $('li', twList);
                 for (var i = tweets.length - 1; i >= options.items; i--) {
                     tweets.get(i).remove();
                 }
             };
+            var snapToSelected = function () {
+                var selected = selectedTweet();
+                if (!selected) { return; }
+                twList.css({ top: -1 * selected.position().top });
+            };
             var scrollToTweet = function (tweet, callback) {
                 twList.animate(
-                    { top: -1 * $(tweet).position().top },
-                    callback || function () { /* No-op */ }
+                    { top: -1 * tweet.position().top },
+                    function () {
+                        selectTweet(tweet);
+                        callback && callback.call();
+                    }
                 );
             };
             var resetToTop = function () {
-                if (!twList.find('li').length) { return; }
-                twList.data('selected', 0);
                 // To go back to the top of the list while looking like we're
                 // always scrolling downwards, we stick a clone of the first
                 // tweet at the end of the list, scroll down to it, reset our
                 // top offset back to 0 instantaneously, and remove the clone.
-                var clone = twList.find('li:first').clone().appendTo(twList);
+                var firstTweet = $('li:first', twList);
+                var clone = firstTweet.clone().appendTo(twList);
                 scrollToTweet(clone, function () {
                     twList.css({ top: 0 });
+                    selectTweet(firstTweet);
                     clone.remove();
                     // We trim extra tweets now rather than immediately after
                     // fetching them so that we don't have to deal with the
@@ -137,14 +141,10 @@
             };
             var startScrolling = function () {
                 window.setInterval(function () {
-                    var tweets = twList.find('li');
-                    var selected = twList.data('selected') + 1;
-                    if (selected < tweets.length) {
-                        twList.data('selected', selected);
-                        scrollToTweet(tweets.get(selected));
-                    } else {
-                        resetToTop();
-                    }
+                    if (!$('li', twList).length) { return; }
+                    var selected = selectedTweet();
+                    var next = selected.next('li');
+                    next.length ? scrollToTweet(next) : resetToTop();
                 }, 1000 * options.rotate);
             };
             getNewTweets();
