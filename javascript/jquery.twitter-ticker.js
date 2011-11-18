@@ -21,11 +21,42 @@
                 return utils.makeLink(str, 'http://twitter.com/' + user);
             });
         },
+        timeAgo: function (dateString) {
+            // Borrowed, with code style tweaks, from Twitter's own widget
+            var rightNow = new Date();
+            var then = $.browser.msie ?
+                Date.parse(dateString.replace(/( \+)/, ' UTC$1')) :
+                new Date(dateString);
+            var diff = rightNow - then;
+            var second = 1000,
+                minute = second * 60,
+                hour = minute * 60,
+                day = hour * 24;
+            if (isNaN(diff) || (diff < 0))
+                                   return "";
+            if (diff < second * 2) return "right now";
+            if (diff < minute)     return Math.floor(diff / second) + " seconds ago";
+            if (diff < minute * 2) return "about 1 minute ago";
+            if (diff < hour)       return Math.floor(diff / minute) + " minutes ago";
+            if (diff < hour * 2)   return "about 1 hour ago";
+            if (diff < day)        return Math.floor(diff / hour) + " hours ago";
+            if ((diff > day) && (diff < day * 2))
+                                   return "yesterday";
+            if (diff < day * 365)  return Math.floor(diff / day) + " days ago";
+            return "over a year ago";
+        },
+        timestamp: function (tweetData) {
+            return $('<span/>')
+                .addClass('timestamp')
+                .html(utils.timeAgo(tweetData.created_at))
+                .data('created', tweetData.created_at);
+        },
         createTweet: function (tweetData) {
             var contents = utils.linkURLs(tweetData.text);
             contents = utils.linkTwitterUsers(contents);
             return $('<li/>')
-                .html(contents)
+                .html(contents + ' ')
+                .append(utils.timestamp(tweetData))
                 .data('id', tweetData.id_str);
         }
     };
@@ -114,11 +145,18 @@
                     $(tweets.get(i)).remove();
                 }
             };
-            var snapToSelected = function () {
+            var snapToSelected = function (tweet) {
+                tweet && selectTweet(tweet);
                 var selected = selectedTweet() || selectTweet();
                 twList.css({ top: -1 * selected.position().top });
             };
+            var updateTimestamp = function (tweet) {
+                $('.timestamp', tweet).each(function () {
+                    $(this).html(utils.timeAgo($(this).data('created')));
+                });
+            };
             var scrollToTweet = function (tweet, callback) {
+                updateTimestamp(tweet);
                 twList.animate(
                     { top: -1 * tweet.position().top },
                     function () {
@@ -133,11 +171,10 @@
                 // tweet underneath the currently selected one, scroll down to
                 // it, reset our top offset back to 0 instantaneously, and
                 // remove the clone.
-                var firstTweet = $('li:first', twList);
-                var clone = firstTweet.clone().insertAfter(selectedTweet());
+                var first = $('li:first', twList);
+                var clone = first.clone(true).insertAfter(selectedTweet());
                 scrollToTweet(clone, function () {
-                    selectTweet(firstTweet);
-                    snapToSelected();
+                    snapToSelected(first);
                     clone.remove();
                     trimTweetList();
                 });
