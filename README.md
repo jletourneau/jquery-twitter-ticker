@@ -41,9 +41,9 @@ retrieved from Twitter:
     div.scroll
       ul
         li
-	li
-	li
-	…
+        li
+        li
+        …
 
 ## TODO
 
