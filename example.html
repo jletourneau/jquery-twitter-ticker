@@ -4,31 +4,28 @@
     <title>Twitter ticker</title>
     <link href="css/twitter-ticker.css" rel="stylesheet" type="text/css">
     <style type="text/css">
-body {
-  font: normal 12px Verdana, sans-serif;
-  margin: 25% 0 0 50%;
-}
 #twitter {
-  border: 1px solid #ddd;
-  padding: 0 0.25em;
-  line-height: 1.2;
-  width: 25em;
+  font: normal 12px Verdana, sans-serif;
+  border: 1px solid #ccc;
+  padding: 0.25em 0.5em;
+  /* For best results, set height to some multiple of line-height */
+  line-height: 1.2em;
   height: 3.6em;
-  margin-left: -12.75em;
+  width: 28em;
 }
     </style>
   </head>
   <body>
     <div id="twitter"></div>
     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.0/jquery.min.js"></script>
-    <script type="text/javascript" src="javascript/user_timeline.js"></script>
     <script type="text/javascript" src="javascript/jquery.twitter-ticker.js"></script>
     <script type="text/javascript">
       $(function () {
           $('#twitter').twitterTicker({
-              screen_name: 'jlet',
-              items: 10,
-              rotate: 3
+              screen_name: 'hodgman',
+              items: 15,
+              rotate: 4,
+              update: 300
           });
       });
     </script>
