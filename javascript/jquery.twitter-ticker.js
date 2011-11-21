@@ -111,6 +111,7 @@
                 tweet = tweet || $('li:first', twList);
                 $('.selected-tweet', twList).removeClass('selected-tweet');
                 tweet.addClass('selected-tweet');
+                utils.updateTimestamp($('.timestamp', tweet));
                 return tweet;
             };
             var selectedTweet = function () {
@@ -166,11 +167,10 @@
                 twList.css({ top: -1 * selected.position().top });
             };
             var scrollToTweet = function (tweet, callback) {
-                utils.updateTimestamp($('.timestamp', tweet));
+                selectTweet(tweet);
                 twList.animate(
                     { top: -1 * tweet.position().top },
                     function () {
-                        selectTweet(tweet);
                         callback && callback.call();
                     }
                 );
