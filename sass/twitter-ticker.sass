@@ -1,6 +1,11 @@
+@import compass/css3
+
 .twitter-ticker
-  position: relative
-  overflow: hidden
+  .scroll
+    line-height: 1.2
+    min-height: 1.2em
+    position: relative
+    overflow: hidden
   ul
     list-style-type: none
     margin: 0
@@ -8,7 +13,12 @@
     position: absolute
     top: 0
     left: 0
-    li
-      overflow: hidden
-      min-height: 100%
-      margin-bottom: 1em
+    height: 100%
+  li
+    overflow: hidden
+    min-height: 100%
+    margin-bottom: 1em
+  .timestamp
+    font-style: italic
+    font-size: 0.83em
+    line-height: (1.2 / 0.83)

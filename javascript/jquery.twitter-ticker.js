@@ -22,7 +22,7 @@
             });
         },
         timeAgo: function (dateString) {
-            // Borrowed, with code style tweaks, from Twitter's own widget
+            // Borrowed from Twitter's own widget, plus some tweaks
             var rightNow = new Date();
             var then = $.browser.msie ?
                 Date.parse(dateString.replace(/( \+)/, ' UTC$1')) :
@@ -45,11 +45,20 @@
             if (diff < day * 365)  return Math.floor(diff / day) + " days ago";
             return "over a year ago";
         },
+        updateTimestamp: function (timestamp) {
+            timestamp.each(function () {
+                $(this).html(utils.timeAgo($(this).data('created')));
+            });
+        },
         timestamp: function (tweetData) {
-            return $('<span/>')
-                .addClass('timestamp')
-                .html(utils.timeAgo(tweetData.created_at))
+            var timestamp = $('<a/>').addClass('timestamp');
+            timestamp
+                .attr('href', (
+                    'http://twitter.com/' + tweetData.user.screen_name +
+                    '/status/' + tweetData.id_str))
                 .data('created', tweetData.created_at);
+            utils.updateTimestamp(timestamp);
+            return timestamp;
         },
         createTweet: function (tweetData) {
             var contents = utils.linkURLs(tweetData.text);
@@ -76,8 +85,11 @@
             update: 0
         }, userOptions);
 
-        // TODO: allow 'q' option in place of 'screen_name' to do global
-        // searches. Problem: different URL and data structure returned.
+        // TODO: allow 'q' option in place of 'screen_name' to tick through
+        // search results rather than a particular user's feed. Problem: that
+        // requires a different URL and provides a different data structure in
+        // response.
+
         if (!options.screen_name) {
             utils.log('No "screen_name" option supplied.');
             return;
@@ -85,9 +97,12 @@
 
         var _init = function (element) {
             element = $(element).addClass('twitter-ticker');
-            var twList = $('<ul/>')
-                .css({ height: element.height() })
+            var scrollBox = $('<div/>')
+                .addClass('scroll')
+                .css({ height: element.height(), width: element.width() })
                 .appendTo(element);
+            var twList = $('<ul/>')
+                .appendTo(scrollBox);
             var holdList = $('<ul/>');
             var tweetsEmpty = function () {
                 return !$('li', twList).length;
@@ -150,13 +165,8 @@
                 var selected = selectedTweet() || selectTweet();
                 twList.css({ top: -1 * selected.position().top });
             };
-            var updateTimestamp = function (tweet) {
-                $('.timestamp', tweet).each(function () {
-                    $(this).html(utils.timeAgo($(this).data('created')));
-                });
-            };
             var scrollToTweet = function (tweet, callback) {
-                updateTimestamp(tweet);
+                utils.updateTimestamp($('.timestamp', tweet));
                 twList.animate(
                     { top: -1 * tweet.position().top },
                     function () {
@@ -196,15 +206,23 @@
                     next.length ? scrollToTweet(next) : resetToTop();
                 },
                 start: function () {
+                    scrolling.stop();
                     scrolling.id = window.setInterval(
                         scrolling.go, 1000 * options.rotate);
                 },
                 stop: function () {
                     window.clearInterval(scrolling.id);
+                },
+                setupHover: function () {
+                    twList.hover(scrolling.stop, scrolling.start);
+                },
+                init: function () {
+                    scrolling.start();
+                    scrolling.setupHover();
                 }
             };
             getNewTweets();
-            scrolling.start();
+            scrolling.init();
         };
 
         return this.each(function () {

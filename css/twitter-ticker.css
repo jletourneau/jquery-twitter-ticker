@@ -1,4 +1,6 @@
-.twitter-ticker {
+.twitter-ticker .scroll {
+  line-height: 1.2;
+  min-height: 1.2em;
   position: relative;
   overflow: hidden;
 }
@@ -9,9 +11,15 @@
   position: absolute;
   top: 0;
   left: 0;
+  height: 100%;
 }
-.twitter-ticker ul li {
+.twitter-ticker li {
   overflow: hidden;
   min-height: 100%;
   margin-bottom: 1em;
+}
+.twitter-ticker .timestamp {
+  font-style: italic;
+  font-size: 0.83em;
+  line-height: 1.446;
 }
