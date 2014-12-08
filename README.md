@@ -1,5 +1,13 @@
 # jQuery Twitter Ticker
 
+## **Note** — Deprecated API
+
+Unfortunately, Twitter has deprecated and disabled its version 1.0 API, which
+this plugin uses to fetch public feeds. The new API requires clients to sign
+in with OAuth, which this plugin does not handle. This project will be left
+up at GitHub for forking or future development, but at this time it is not
+able to render Twitter feeds.
+
 ## Use case
 
 A crude version of this plugin was first developed to provide a (nearly)
